@@ -40,14 +40,30 @@ ADD authorized_keys /root/.ssh/authorized_keys
 
 # install sos on the remote host
 RUN  pip install spyder jedi notebook nbconvert nbformat pyyaml psutil tqdm
-RUN  pip install fasteners pygments ipython ptpython networkx pydotplus
+RUN  pip install fasteners pygments ipython ptpython networkx pydotplus sos
 
 ARG  SHA=LATEST
-RUN  SHA=$SHA git clone http://github.com/vatlab/sos sos
-RUN  cd sos && python setup.py install
+RUN  SHA=$SHA git clone http://github.com/vatlab/sos-pbs sos-pbs
+RUN  cd sos-pbs && python setup.py install
 
 RUN  echo "export TS_SLOTS=10" >> /root/.bash_profile
 
+RUN  mkdir $HOME/.sos
+RUN  echo "hosts:" > $HOME/.sos/hosts.yml
+RUN  echo "    ts:" >> $HOME/.sos/hosts.yml
+RUN  echo "        description: task spooler on the docker machine" >> $HOME/.sos/hosts.yml
+RUN  echo "        based_on: hosts.docker" >> $HOME/.sos/hosts.yml
+RUN  echo "        queue_type: pbs" >> $HOME/.sos/hosts.yml
+RUN  echo "        status_check_interval: 5" >> $HOME/.sos/hosts.yml
+RUN  echo "        job_template: |" >> $HOME/.sos/hosts.yml
+RUN  echo "            #!/bin/bash" >> $HOME/.sos/hosts.yml
+RUN  echo "            cd ${cur_dir}" >> $HOME/.sos/hosts.yml
+RUN  echo "            sos execute ${task} -v ${verbosity} -s ${sig_mode} ${'--dryrun' if run_mode == 'dryrun' else ''}" >> $HOME/.sos/hosts.yml
+RUN  echo "        max_running_jobs: 100" >> $HOME/.sos/hosts.yml
+RUN  echo "        submit_cmd: tsp -L ${task} sh ${job_file}" >> $HOME/.sos/hosts.yml
+RUN  echo "        status_cmd: tsp -s ${job_id}" >> $HOME/.sos/hosts.yml
+RUN  echo "        kill_cmd: tsp -r ${job_id}" >> $HOME/.sos/hosts.yml
+		
 EXPOSE 22
 CMD ["/usr/sbin/sshd", "-D"]
 HERE
