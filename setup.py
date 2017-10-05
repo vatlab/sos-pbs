@@ -29,7 +29,7 @@ with open('src/sos_pbs/_version.py') as version:
             __version__ = eval(line.split('=')[1])
             break
 
-setup(name = "sos",
+setup(name = "sos-pbs",
     version = __version__,
     description = 'PBS task engine for Script of Scripts (SoS)',
     author = 'Bo Peng',
