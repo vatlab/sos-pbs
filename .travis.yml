@@ -30,7 +30,7 @@ before_install:
     - pip install fasteners pygments networkx pydot pydotplus 
     # https://github.com/jupyter/jupyter/issues/150
     - pip install entrypoints jupyter coverage codacy-coverage pytest pytest-cov python-coveralls
-    - pip install sos sos-notebook
+    - pip install sos sos-notebook sos-bash
     - conda install pandas numpy
 
 sudo: required
@@ -46,7 +46,7 @@ script:
     - 'if [ $TRAVIS_PYTHON_VERSION == "3.6" ]; then
            pytest -x -v;
        else
-           pytest -x -v --cov sos --cov-config ../.coveragerc --cov-report=xml;
+           pytest -x -v --cov sos_pbs --cov-report=xml;
        fi'
       
 after_success:
