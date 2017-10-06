@@ -26,7 +26,7 @@ before_install:
     # add docker
     - pip install docker
     # packages required by SoS
-    - pip install pyyaml psutil tqdm
+    - pip install pyyaml psutil tqdm nose
     - pip install fasteners pygments networkx pydot pydotplus 
     # https://github.com/jupyter/jupyter/issues/150
     - pip install entrypoints jupyter coverage codacy-coverage pytest pytest-cov python-coveralls
