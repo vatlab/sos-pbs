@@ -54,8 +54,7 @@ script:
       
 after_success:
     - 'if [ $TRAVIS_PYTHON_VERSION == "3.6" ]; then
-           mv .coverage .coverage.matlab;
-           coverage combine --append;
+           #coverage combine --append;
            coveralls;
         fi'
 
