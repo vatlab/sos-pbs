@@ -46,15 +46,16 @@ before_script:
 script:
     # coverage does not seem to work well with python 3.6, but it does not really matter because we have coverage report from python 3.5 already
     # SAS and Matlab are not tested
-    - 'if [ $TRAVIS_PYTHON_VERSION == "3.6" ]; then
+    - 'if [ $TRAVIS_PYTHON_VERSION == "3.5" ]; then
            pytest -x -v;
        else
-           pytest -x -v --cov sos_pbs --cov-report=xml;
+           pytest -x -v --cov sos_pbs --cov-report=term-missing;
        fi'
       
 after_success:
-    - 'if [ $TRAVIS_PYTHON_VERSION == "3.5" ]; then
-           coverage combine;
+    - 'if [ $TRAVIS_PYTHON_VERSION == "3.6" ]; then
+           mv .coverage .coverage.matlab;
+           coverage combine --append;
            coveralls;
         fi'
 
