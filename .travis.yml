@@ -49,11 +49,12 @@ script:
     - 'if [ $TRAVIS_PYTHON_VERSION == "3.5" ]; then
            pytest -x -v;
        else
-           pytest -x -v --cov sos_pbs --cov-report=term-missing;
+           pytest -x -v --cov sos_pbs --cov-report=xml;
        fi'
       
 after_success:
     - 'if [ $TRAVIS_PYTHON_VERSION == "3.6" ]; then
+           coverage combine;
            coveralls;
         fi'
 
