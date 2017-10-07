@@ -142,4 +142,17 @@ cat >> ~/docker.yml << 'HERE'
         submit_cmd: tsp -L ${task} sh ${job_file}
         status_cmd: tsp -s ${job_id}
         kill_cmd: tsp -r ${job_id}
+    local_ts:
+        description: task spooler on the docker machine
+        address: localhost
+        queue_type: pbs
+        status_check_interval: 5
+        job_template: |
+            #!/bin/bash
+            cd ${cur_dir}
+            sos execute ${task} -v ${verbosity} -s ${sig_mode} ${'--dryrun' if run_mode == 'dryrun' else ''}
+        max_running_jobs: 100
+        submit_cmd: tsp -L ${task} sh ${job_file}
+        status_cmd: tsp -s ${job_id}
+        kill_cmd: tsp -r ${job_id}
 HERE
