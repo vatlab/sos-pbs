@@ -180,9 +180,9 @@ class PBS_TaskEngine(TaskEngine):
         cmd = cfg_interpolate(self.status_cmd, job_id)
         return self.agent.check_output(cmd)
 
-    def query_tasks(self, tasks=None, verbosity=1, html=False, start_time=True, age=None):
+    def query_tasks(self, tasks=None, verbosity=1, html=False, start_time=True, age=None, tags=None):
         if verbosity <= 2:
-            status_lines = super(PBS_TaskEngine, self).query_tasks(tasks, verbosity, html, start_time, age=age)
+            status_lines = super(PBS_TaskEngine, self).query_tasks(tasks, verbosity, html, start_time, age=age, tags=tags)
             # there is a change that a job is submitted, but failed before the sos command is executed
             # so we will have to ask the task engine about the submitted jobs #608
             if not html:
