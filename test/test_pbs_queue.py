@@ -634,5 +634,12 @@ run:
             lines = subprocess.check_output(['sos', 'status', '-q', 'ts', '-c', '~/docker.yml']).decode().splitlines()
             self.assertGreaterEqual(len(lines), 2)
 
+    def testListHosts(self):
+        '''test list hosts using sos status -q'''
+        for v in ['0', '1', '3', '4']:
+            # ts of type pbs should be in output
+            output = subprocess.check_output(['sos', 'status', '-c', '~/docker.yml', '-q', '-v', v]).decode()
+            self.assertTrue('ts' in output)
+
 if __name__ == '__main__':
     unittest.main()
