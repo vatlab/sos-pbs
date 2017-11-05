@@ -39,20 +39,20 @@ class PBS_TaskEngine(TaskEngine):
         if 'job_template' in self.config:
             self.job_template = self.config['job_template'].replace('\r\n', '\n')
         else:
-            raise ValueError('A job_template is required for queue {}'.format(self.alias))
+            raise ValueError(f'A job_template is required for queue {self.alias}')
 
         if 'submit_cmd' not in self.config:
-            raise ValueError('Missing configuration submit_cmd for queue {}'.format(self.alias))
+            raise ValueError(f'Missing configuration submit_cmd for queue {self.alias}')
         else:
             self.submit_cmd = self.config['submit_cmd']
 
         if 'status_cmd' not in self.config:
-            raise ValueError('Missing configuration status_cmd for queue {}'.format(self.alias))
+            raise ValueError(f'Missing configuration status_cmd for queue {self.alias}')
         else:
             self.status_cmd = self.config['status_cmd']
 
         if 'kill_cmd' not in self.config:
-            raise ValueError('Missing configuration kill_cmd for queue {}'.format(self.alias))
+            raise ValueError(f'Missing configuration kill_cmd for queue {self.alias}')
         else:
             self.kill_cmd = self.config['kill_cmd']
 
@@ -84,19 +84,19 @@ class PBS_TaskEngine(TaskEngine):
         if 'name' in runtime:
             runtime['job_name'] = cfg_interpolate(runtime['name'], sos_dict)
         else:
-            runtime['job_name'] = cfg_interpolate('${step_name}_${_index}', sos_dict)
+            runtime['job_name'] = cfg_interpolate('{step_name}_{_index}', sos_dict)
         if 'nodes' not in runtime:
             runtime['nodes'] = 1
         if 'cores' not in runtime:
             runtime['cores'] = 1
         # for backward compatibility
-        runtime['job_file'] = '~/.sos/tasks/{}.sh'.format(task_id)
+        runtime['job_file'] = f'~/.sos/tasks/{task_id}.sh'
 
         # let us first prepare a task file
         try:
             job_text = cfg_interpolate(self.job_template, runtime)
         except Exception as e:
-            raise ValueError('Failed to generate job file for task {}: {}'.format(task_id, e))
+            raise ValueError(f'Failed to generate job file for task {task_id}: {e}')
 
         # now we need to write a job file
         job_file = os.path.join(os.path.expanduser('~'), '.sos', 'tasks', self.alias, task_id + '.sh')
@@ -110,24 +110,23 @@ class PBS_TaskEngine(TaskEngine):
 
         if runtime['run_mode'] == 'dryrun':
             try:
-                cmd = 'bash ~/.sos/tasks/{}.sh'.format(task_id)
+                cmd = f'bash ~/.sos/tasks/{task_id}.sh'
                 print(self.agent.check_output(cmd))
             except Exception as e:
-                raise RuntimeError('Failed to submit task {}: {}'.format(task_id, e))
+                raise RuntimeError(f'Failed to submit task {task_id}: {e}')
         else:
             #
             # now we need to figure out a command to submit the task
             try:
                 cmd = cfg_interpolate(self.submit_cmd, runtime)
             except Exception as e:
-                raise ValueError('Failed to generate job submission command from template "{}": {}'.format(
-                    self.submit_cmd, e))
-            env.logger.debug('submit {}: {}'.format(task_id, cmd))
+                raise ValueError(f'Failed to generate job submission command from template "{self.submit_cmd}": {e}')
+            env.logger.debug(f'submit {task_id}: {cmd}')
             try:
                 try:
                     cmd_output = self.agent.check_output(cmd).strip()
                 except Exception as e:
-                    raise RuntimeError('Failed to submit task {}: {}'.format(task_id, e))
+                    raise RuntimeError(f'Failed to submit task {task_id}: {e}')
 
                 if 'submit_cmd_output' not in self.config:
                     submit_cmd_output = '{job_id}'
@@ -135,7 +134,8 @@ class PBS_TaskEngine(TaskEngine):
                     submit_cmd_output = self.config['submit_cmd_output']
                 #
                 if not '{job_id}' in submit_cmd_output:
-                    raise ValueError('Option submit_cmd_output should have at least a pattern for job_id, "{}" specified.'.format(submit_cmd_output))
+                    raise ValueError(
+                        f'Option submit_cmd_output should have at least a pattern for job_id, "{submit_cmd_output}" specified.')
                 #
                 # try to extract job_id from command output
                 # let us write an job_id file so that we can check status of tasks more easily
@@ -144,25 +144,25 @@ class PBS_TaskEngine(TaskEngine):
                     try:
                         res = extract_pattern(submit_cmd_output, [cmd_output.strip()])
                         if 'job_id' not in res or len(res['job_id']) != 1:
-                            env.logger.warning('Failed to extract job_id from "{}" using pattern "{}"'.format(
-                                cmd_output.strip(), submit_cmd_output))
+                            env.logger.warning(
+                                f'Failed to extract job_id from "{cmd_output.strip()}" using pattern "{submit_cmd_output}"')
                             job_id = '000000'
-                            job.write('job_id: {}\n'.format(job_id))
+                            job.write(f'job_id: {job_id}\n')
                         else:
                             job_id = res['job_id'][0]
                             # other variables
                             for k,v in res.items():
-                                job.write('{}: {}\n'.format(k, v[0]))
+                                job.write(f'{k}: {v[0]}\n')
                     except Exception as e:
-                        env.logger.warning('Failed to extract job_id from "{}" using pattern "{}"'.format(
-                            cmd_output.strip(), submit_cmd_output))
+                        env.logger.warning(
+                            f'Failed to extract job_id from "{cmd_output.strip()}" using pattern "{submit_cmd_output}"')
                         job_id = '000000'
-                        job.write('job_id: {}\n'.format(job_id))
+                        job.write(f'job_id: {job_id}\n')
                 # output job id to stdout
-                self.notify('{} ``submitted`` to {} with job id {}'.format(task_id, self.alias, job_id))
+                self.notify(f'{task_id} ``submitted`` to {self.alias} with job id {job_id}')
                 return True
             except Exception as e:
-                raise RuntimeError('Failed to submit task {}: {}'.format(task_id, e))
+                raise RuntimeError(f'Failed to submit task {task_id}: {e}')
 
     def _get_job_id(self, task_id):
         job_id_file = os.path.join(os.path.expanduser('~'), '.sos', 'tasks', self.alias, task_id + '.job_id')
@@ -180,9 +180,9 @@ class PBS_TaskEngine(TaskEngine):
         cmd = cfg_interpolate(self.status_cmd, job_id)
         return self.agent.check_output(cmd)
 
-    def query_tasks(self, tasks=None, verbosity=1, html=False, start_time=True, age=None):
+    def query_tasks(self, tasks=None, verbosity=1, html=False, start_time=True, age=None, tags=None):
         if verbosity <= 2:
-            status_lines = super(PBS_TaskEngine, self).query_tasks(tasks, verbosity, html, start_time, age=age)
+            status_lines = super(PBS_TaskEngine, self).query_tasks(tasks, verbosity, html, start_time, age=age, tags=tags)
             # there is a change that a job is submitted, but failed before the sos command is executed
             # so we will have to ask the task engine about the submitted jobs #608
             if not html:
@@ -193,17 +193,17 @@ class PBS_TaskEngine(TaskEngine):
                     fields = line.split('\t')
                     if len(fields) < verbosity:
                         env.logger.error(fields)
-                        env.logger.warning('Suspicious status line {}'.format(line))
+                        env.logger.warning(f'Suspicious status line {line}')
                         continue
                     task_id = fields[0]
                     if fields[verbosity] == 'submitted':
                         try:
                             job_id = self._get_job_id(task_id)
                             if not job_id:
-                                raise RuntimeError('failed to obtain job id for task {}'.format(task_id))
+                                raise RuntimeError(f'failed to obtain job id for task {task_id}')
                             self._query_job_status(job_id, task_id)
                         except Exception as e:
-                            env.logger.trace('Failed to query status for task {}: {}'.format(task_id, e))
+                            env.logger.trace(f'Failed to query status for task {task_id}: {e}')
                             fields[verbosity] = 'failed'
                     res += '\t'.join(fields) + '\n'
                 return res
@@ -215,10 +215,10 @@ class PBS_TaskEngine(TaskEngine):
                     try:
                         job_id = self._get_job_id(task_id)
                         if not job_id:
-                            raise RuntimeError('failed to obtain job id for task {}'.format(task_id))
+                            raise RuntimeError(f'failed to obtain job id for task {task_id}')
                         self._query_job_status(job_id, task_id)
                     except Exception as e:
-                        env.logger.trace('Failed to query status for task {}: {}'.format(task_id, e))
+                        env.logger.trace(f'Failed to query status for task {task_id}: {e}')
                         status_lines = status_lines.replace('submitted', 'failed', 1)
                 return status_lines
 
@@ -236,29 +236,29 @@ class PBS_TaskEngine(TaskEngine):
                 job_id = self._get_job_id(task_id)
                 if not job_id:
                     # no job id file
-                    raise RuntimeError('failed to obtain job id for task {}'.format(task_id))
+                    raise RuntimeError(f'failed to obtain job id for task {task_id}')
                 res += self._query_job_status(job_id, task_id)
             except Exception as e:
-                env.logger.debug('Failed to get status of task {} (job_id: {}) from template "{}": {}'.format(
-                    task_id, job_id, self.status_cmd, e))
+                env.logger.debug(
+                    f'Failed to get status of task {task_id} (job_id: {job_id}) from template "{self.status_cmd}": {e}')
         return res
 
     def kill_tasks(self, tasks, all_tasks=False):
         # remove the task from SoS task queue, this would also give us a list of
         # tasks on the remote server
         output = super(PBS_TaskEngine, self).kill_tasks(tasks, all_tasks)
-        env.logger.trace('Output of local kill: {}'.format(output))
+        env.logger.trace(f'Output of local kill: {output}')
         # then we call the real PBS commands to kill tasks
         res = ''
         for line in output.split('\n'):
             if not line.strip():
                 continue
             task_id, status = line.split('\t')
-            res += '{}\t{} (old status)\t'.format(task_id, status)
+            res += f'{task_id}\t{status} (old status)\t'
 
             job_id = self._get_job_id(task_id)
             if not job_id:
-                env.logger.debug('No job_id for task {}'.format(task_id))
+                env.logger.debug(f'No job_id for task {task_id}')
                 continue
             try:
                 job_id.update({'task': task_id})
@@ -266,6 +266,6 @@ class PBS_TaskEngine(TaskEngine):
                 env.logger.debug('Running {}'.format(cmd))
                 res += self.agent.check_output(cmd) + '\n'
             except Exception as e:
-                env.logger.debug('Failed to kill job {} (job_id: {}) from template "{}": {}'.format(
-                    task_id, job_id, self.kill_cmd, e))
+                env.logger.debug(
+                    f'Failed to kill job {task_id} (job_id: {job_id}) from template "{self.kill_cmd}": {e}')
         return res
