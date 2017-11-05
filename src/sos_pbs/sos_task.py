@@ -243,10 +243,10 @@ class PBS_TaskEngine(TaskEngine):
                     f'Failed to get status of task {task_id} (job_id: {job_id}) from template "{self.status_cmd}": {e}')
         return res
 
-    def kill_tasks(self, tasks, all_tasks=False):
+    def kill_tasks(self, tasks, tags=None, all_tasks=False):
         # remove the task from SoS task queue, this would also give us a list of
         # tasks on the remote server
-        output = super(PBS_TaskEngine, self).kill_tasks(tasks, all_tasks)
+        output = super(PBS_TaskEngine, self).kill_tasks(tasks, tags, all_tasks)
         env.logger.trace(f'Output of local kill: {output}')
         # then we call the real PBS commands to kill tasks
         res = ''
