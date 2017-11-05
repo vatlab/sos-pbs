@@ -92,7 +92,7 @@ run:
 input: for_each={'i': range(5)}
 task:
 
-run:
+run: expand=True
     echo I am {i}
     sleep {5+i}
 ''')
@@ -136,7 +136,7 @@ run:
 input: for_each={'i': range(3)}
 task:
 
-run:
+run: expand=True
     echo I am task spooler {i}
     sleep {5+i*2}
 ''')
@@ -184,7 +184,7 @@ run:
 input: for_each={'i': range(3)}
 task:
 
-run:
+run: expand=True
     echo I am spooler with force {i}
     sleep {10 + i*2}
 ''')
@@ -307,7 +307,7 @@ shutil.copy("tt1.py", f"{{output}}")
 input: for_each={'i': range(3)}
 task:
 
-run:
+run: expand=True
     echo Testing purge {i}
     sleep {i*2}
 ''')
@@ -334,7 +334,7 @@ run:
 input: for_each={'i': range(3)}
 task:
 
-run:
+run: expand=True
     echo Testing purge {i}
     sleep {i*2}
 ''')
@@ -398,7 +398,7 @@ run:
 input: remote('test_file.txt')
 output: 'test1.txt'
 task:
-run:
+run: expand=True
     echo {input} >> {output}
 ''')
         wf = script.workflow()
@@ -442,7 +442,7 @@ A = 'test_file_A.txt'
 input: remote(A, ['test_file_B.txt'])
 output: 'test1.txt'
 task:
-run:
+run: expand=True
     cat {input} >> {output}
 ''')
         wf = script.workflow()
@@ -504,7 +504,7 @@ run:
 [20]
 output: remote(f"{input:R}.bak")
 task:
-run:
+run: expand=True
     cp {input} {output}
 ''')
         wf = script.workflow()
@@ -611,7 +611,7 @@ sh:
 [10]
 input: for_each={'i': range(2)}
 task:
-run:
+run: expand=True
    echo this is jupyter pending test "{i}"
    sleep  {10+i}
 
