@@ -57,12 +57,12 @@ RUN  echo "        queue_type: pbs" >> $HOME/.sos/hosts.yml
 RUN  echo "        status_check_interval: 5" >> $HOME/.sos/hosts.yml
 RUN  echo "        job_template: |" >> $HOME/.sos/hosts.yml
 RUN  echo "            #!/bin/bash" >> $HOME/.sos/hosts.yml
-RUN  echo "            cd \${cur_dir}" >> $HOME/.sos/hosts.yml
-RUN  echo "            sos execute \${task} -v \${verbosity} -s \${sig_mode} \${'--dryrun' if run_mode == 'dryrun' else ''}" >> $HOME/.sos/hosts.yml
+RUN  echo "            cd {cur_dir}" >> $HOME/.sos/hosts.yml
+RUN  echo "            sos execute {task} -v {verbosity} -s {sig_mode} {'--dryrun' if run_mode == 'dryrun' else ''}" >> $HOME/.sos/hosts.yml
 RUN  echo "        max_running_jobs: 100" >> $HOME/.sos/hosts.yml
-RUN  echo "        submit_cmd: tsp -L \${task} sh \${job_file}" >> $HOME/.sos/hosts.yml
-RUN  echo "        status_cmd: tsp -s \${job_id}" >> $HOME/.sos/hosts.yml
-RUN  echo "        kill_cmd: tsp -r \${job_id}" >> $HOME/.sos/hosts.yml
+RUN  echo "        submit_cmd: tsp -L {task} sh {job_file}" >> $HOME/.sos/hosts.yml
+RUN  echo "        status_cmd: tsp -s {job_id}" >> $HOME/.sos/hosts.yml
+RUN  echo "        kill_cmd: tsp -r {job_id}" >> $HOME/.sos/hosts.yml
 		
 EXPOSE 22
 CMD ["/usr/sbin/sshd", "-D"]
@@ -104,10 +104,10 @@ hosts:
         paths:
             home: $HOME
     docker:
-        address: \${remote_user}@localhost
+        address: "{remote_user}@localhost"
         port: $PORT22
         paths:
-            home: /\${remote_user}
+            home: "/{remote_user}"
     local_limited:
         based_on:
            - hosts.localhost
@@ -136,12 +136,12 @@ cat >> ~/docker.yml << 'HERE'
         status_check_interval: 5
         job_template: |
             #!/bin/bash
-            cd ${cur_dir}
-            sos execute ${task} -v ${verbosity} -s ${sig_mode} ${'--dryrun' if run_mode == 'dryrun' else ''}
+            cd {cur_dir}
+            sos execute {task} -v {verbosity} -s {sig_mode} {'--dryrun' if run_mode == 'dryrun' else ''}
         max_running_jobs: 100
-        submit_cmd: tsp -L ${task} sh ${job_file}
-        status_cmd: tsp -s ${job_id}
-        kill_cmd: tsp -r ${job_id}
+        submit_cmd: tsp -L {task} sh {job_file}
+        status_cmd: tsp -s {job_id}
+        kill_cmd: tsp -r {job_id}
     local_ts:
         description: task spooler on the docker machine
         address: localhost
@@ -149,10 +149,10 @@ cat >> ~/docker.yml << 'HERE'
         status_check_interval: 5
         job_template: |
             #!/bin/bash
-            cd ${cur_dir}
-            sos execute ${task} -v ${verbosity} -s ${sig_mode} ${'--dryrun' if run_mode == 'dryrun' else ''}
+            cd {cur_dir}
+            sos execute {task} -v {verbosity} -s {sig_mode} {'--dryrun' if run_mode == 'dryrun' else ''}
         max_running_jobs: 100
-        submit_cmd: tsp -L ${task} sh ${job_file}
-        status_cmd: tsp -s ${job_id}
-        kill_cmd: tsp -r ${job_id}
+        submit_cmd: tsp -L {task} sh {job_file}
+        status_cmd: tsp -s {job_id}
+        kill_cmd: tsp -r {job_id}
 HERE
