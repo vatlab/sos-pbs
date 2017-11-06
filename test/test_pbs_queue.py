@@ -92,9 +92,9 @@ run:
 input: for_each={'i': range(5)}
 task:
 
-run:
-    echo I am ${i}
-    sleep ${5+i}
+run: expand=True
+    echo I am {i}
+    sleep {5+i}
 ''')
         wf = script.workflow()
         res = Base_Executor(wf, config={
@@ -136,9 +136,9 @@ run:
 input: for_each={'i': range(3)}
 task:
 
-run:
-    echo I am task spooler ${i}
-    sleep ${5+i*2}
+run: expand=True
+    echo I am task spooler {i}
+    sleep {5+i*2}
 ''')
         wf = script.workflow()
         res = Base_Executor(wf, config={
@@ -184,9 +184,9 @@ run:
 input: for_each={'i': range(3)}
 task:
 
-run:
-    echo I am spooler with force ${i}
-    sleep ${10 + i*2}
+run: expand=True
+    echo I am spooler with force {i}
+    sleep {10 + i*2}
 ''')
         wf = script.workflow()
         res = Base_Executor(wf, config={
@@ -282,7 +282,7 @@ sz = os.path.getmtime('llink')
 output: 'tt1.py.bak'
 task: to_host=r'{}'
 import shutil
-shutil.copy("tt1.py", "${{output}}")
+shutil.copy("tt1.py", f"{{output}}")
 '''.format(os.path.join(os.path.abspath('.').upper(), 'tt1.py')))
         wf = script.workflow()
         Base_Executor(wf, config={
@@ -307,9 +307,9 @@ shutil.copy("tt1.py", "${{output}}")
 input: for_each={'i': range(3)}
 task:
 
-run:
-    echo Testing purge ${i}
-    sleep ${i*2}
+run: expand=True
+    echo Testing purge {i}
+    sleep {i*2}
 ''')
         wf = script.workflow()
         res = Base_Executor(wf, config={
@@ -334,9 +334,9 @@ run:
 input: for_each={'i': range(3)}
 task:
 
-run:
-    echo Testing purge ${i}
-    sleep ${i*2}
+run: expand=True
+    echo Testing purge {i}
+    sleep {i*2}
 ''')
         wf = script.workflow()
         res = Base_Executor(wf, config={
@@ -398,8 +398,8 @@ run:
 input: remote('test_file.txt')
 output: 'test1.txt'
 task:
-run:
-    echo ${input} >> ${output}
+run: expand=True
+    echo {input} >> {output}
 ''')
         wf = script.workflow()
         Base_Executor(wf, config={
@@ -442,8 +442,8 @@ A = 'test_file_A.txt'
 input: remote(A, ['test_file_B.txt'])
 output: 'test1.txt'
 task:
-run:
-    cat ${input} >> ${output}
+run: expand=True
+    cat {input} >> {output}
 ''')
         wf = script.workflow()
         Base_Executor(wf, config={
@@ -502,10 +502,10 @@ run:
     touch test.py
 
 [20]
-output: remote("${input!R}.bak")
+output: remote(f"{input:R}.bak")
 task:
-run:
-    cp ${input} ${output}
+run: expand=True
+    cp {input} {output}
 ''')
         wf = script.workflow()
         Base_Executor(wf, config={
@@ -611,9 +611,9 @@ sh:
 [10]
 input: for_each={'i': range(2)}
 task:
-run:
-   echo this is jupyter pending test "${i}"
-   sleep  ${10+i}
+run: expand=True
+   echo this is jupyter pending test "{i}"
+   sleep  {10+i}
 
 """
             # these should be automatically rerun by the frontend
