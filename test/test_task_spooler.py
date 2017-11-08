@@ -27,7 +27,7 @@ import unittest
 from sos.sos_script import SoS_Script
 from sos.utils import env
 from sos.sos_executor import Base_Executor
-from sos.target import FileTarget
+from sos.target import file_target
 from sos.hosts import Host
 import subprocess
 import shutil
@@ -60,7 +60,7 @@ class TestPBSQueue(unittest.TestCase):
 
     def tearDown(self):
         for f in self.temp_files:
-            FileTarget(f).remove('both')
+            file_target(f).remove('both')
 
 
     @unittest.skipIf(not shutil.which('ts'), "ts command not found")
@@ -81,7 +81,7 @@ sh:
                 'default_queue': 'local_ts',
                 'sig_mode': 'force',
                 }).run()
-        self.assertTrue(FileTarget('a.txt').exists())
+        self.assertTrue(file_target('a.txt').exists())
 
     @unittest.skipIf(not has_docker, "Docker container not usable")
     def testRemoteTS(self):
@@ -98,7 +98,7 @@ sh:
         self.assertTrue(ret == 0)
         ret = subprocess.call('sos pull ar.txt -c ~/docker.yml --from ts', shell=True)
         self.assertTrue(ret == 0)
-        self.assertTrue(FileTarget('ar.txt').exists())
+        self.assertTrue(file_target('ar.txt').exists())
 
 if __name__ == '__main__':
     unittest.main()
