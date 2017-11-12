@@ -55,10 +55,10 @@ setup(name = "sos-pbs",
     packages = find_packages('src'),
     package_dir = {'': 'src'},
     install_requires=[
-          'sos>=0.9.10.8',
+          'sos>=0.9.10.10',
       ],
     entry_points= '''
 [sos_taskengines]
-pbs = sos_pbs.sos_task:PBS_TaskEngine
+pbs = sos_pbs.tasks:PBS_TaskEngine
 '''
 )
