@@ -79,12 +79,12 @@ class PBS_TaskEngine(TaskEngine):
         runtime = self.config
         # we also use saved verbosity and sig_mode because the current sig_mode might have been changed
         # (e.g. in Jupyter) after the job is saved.
-        runtime.update({x:sos_dict['_runtime'][x] for x in ('nodes', 'cores', 'mem', 'walltime', 'cur_dir', 'home_dir', 'name', 'verbosity', 'sig_mode', 'run_mode') if x in sos_dict['_runtime']})
+        runtime.update({x:sos_dict['_runtime'][x] for x in ('nodes', 'cores', 'mem', 'walltime', 'cur_dir', 'home_dir', 'verbosity', 'sig_mode', 'run_mode') if x in sos_dict['_runtime']})
+        if 'name' in sos_dict['_runtime']:
+            env.logger.warning("Runtime option name is deprecated. Please use tags to keep track of task names.")
         runtime['task'] = task_id
-        if 'name' in runtime:
-            runtime['job_name'] = cfg_interpolate(runtime['name'], sos_dict)
-        else:
-            runtime['job_name'] = cfg_interpolate('{step_name}_{_index}', sos_dict)
+        # this is also deprecated
+        runtime['job_name'] = task_id
         if 'nodes' not in runtime:
             runtime['nodes'] = 1
         if 'cores' not in runtime:
@@ -180,9 +180,9 @@ class PBS_TaskEngine(TaskEngine):
         cmd = cfg_interpolate(self.status_cmd, job_id)
         return self.agent.check_output(cmd)
 
-    def query_tasks(self, tasks=None, verbosity=1, html=False, start_time=True, age=None, tags=None):
+    def query_tasks(self, tasks=None, verbosity=1, html=False, **kwargs):
         if verbosity <= 2:
-            status_lines = super(PBS_TaskEngine, self).query_tasks(tasks, verbosity, html, start_time, age=age, tags=tags)
+            status_lines = super(PBS_TaskEngine, self).query_tasks(tasks, verbosity, html, **kwargs)
             # there is a change that a job is submitted, but failed before the sos command is executed
             # so we will have to ask the task engine about the submitted jobs #608
             if not html:
@@ -243,10 +243,10 @@ class PBS_TaskEngine(TaskEngine):
                     f'Failed to get status of task {task_id} (job_id: {job_id}) from template "{self.status_cmd}": {e}')
         return res
 
-    def kill_tasks(self, tasks, tags=None, all_tasks=False):
+    def kill_tasks(self, tasks, **kwargs):
         # remove the task from SoS task queue, this would also give us a list of
         # tasks on the remote server
-        output = super(PBS_TaskEngine, self).kill_tasks(tasks, tags, all_tasks)
+        output = super(PBS_TaskEngine, self).kill_tasks(tasks, **kwargs)
         env.logger.trace(f'Output of local kill: {output}')
         # then we call the real PBS commands to kill tasks
         res = ''
@@ -263,7 +263,7 @@ class PBS_TaskEngine(TaskEngine):
             try:
                 job_id.update({'task': task_id})
                 cmd = cfg_interpolate(self.kill_cmd, job_id)
-                env.logger.debug('Running {}'.format(cmd))
+                env.logger.debug(f'Running {cmd}')
                 res += self.agent.check_output(cmd) + '\n'
             except Exception as e:
                 env.logger.debug(

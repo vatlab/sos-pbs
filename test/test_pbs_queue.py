@@ -27,7 +27,7 @@ import unittest
 from sos.parser import SoS_Script
 from sos.utils import env
 from sos.workflow_executor import Base_Executor
-from sos.targets import FileTarget
+from sos.targets import file_target
 from sos.hosts import Host
 import subprocess
 
@@ -59,7 +59,7 @@ class TestPBSQueue(unittest.TestCase):
 
     def tearDown(self):
         for f in self.temp_files:
-            FileTarget(f).remove('both')
+            file_target(f).remove('both')
 
 
     @unittest.skipIf(not has_docker, "Docker container not usable")
@@ -80,7 +80,7 @@ run:
                 'default_queue': 'docker',
                 'sig_mode': 'force',
                 }).run()
-        self.assertTrue(FileTarget('result.txt').exists())
+        self.assertTrue(file_target('result.txt').exists())
         with open('result.txt') as res:
             self.assertEqual(res.read(), 'a\n')
 
@@ -274,7 +274,7 @@ sz = os.path.getmtime('llink')
     @unittest.skipIf(not os.path.exists(os.path.expanduser('~').upper()) or not has_docker, 'Skip test for case sensitive file system')
     def testCaseInsensitiveLocalPath(self):
         '''Test path_map from a case insensitive file system.'''
-        FileTarget('test_pbs_queue.py.bak').remove('both')
+        file_target('test_pbs_queue.py.bak').remove('both')
         with open('tt1.py', 'w') as tt1:
             tt1.write('soemthing')
         script = SoS_Script('''
@@ -292,7 +292,7 @@ shutil.copy("tt1.py", f"{{output}}")
                 'default_queue': 'docker',
                 'sig_mode': 'force',
                 }).run()
-        self.assertTrue(FileTarget('tt1.py.bak').exists('target'))
+        self.assertTrue(file_target('tt1.py.bak').exists('target'))
         # the files should be the same
         with open('tt1.py') as ori, open('tt1.py.bak') as bak:
             self.assertEqual(ori.read(), bak.read())
@@ -392,7 +392,7 @@ run:
         # this file is remote only
         self.assertFalse(os.path.isfile('test_file.txt'))
         #
-        FileTarget('test1.txt').remove('both')
+        file_target('test1.txt').remove('both')
         script = SoS_Script('''
 [10]
 input: remote('test_file.txt')
@@ -435,7 +435,7 @@ run:
         self.assertFalse(os.path.isfile('test_file_A.txt'))
         self.assertFalse(os.path.isfile('test_file_B.txt'))
         #
-        FileTarget('test1.txt').remove('both')
+        file_target('test1.txt').remove('both')
         script = SoS_Script('''
 [10]
 A = 'test_file_A.txt'
@@ -466,8 +466,8 @@ run: expand=True
     def testRemoteOutput(self):
         '''Test remote target'''
         # purge all previous tasks
-        FileTarget('test_file.txt').remove('both')
-        FileTarget('test_file1.txt').remove('both')
+        file_target('test_file.txt').remove('both')
+        file_target('test_file1.txt').remove('both')
         script = SoS_Script('''
 [10]
 output: remote('test_file.txt'), 'test_file1.txt'
@@ -492,8 +492,8 @@ run:
     def testDelayedInterpolation(self):
         '''Test delayed interpolation with expression involving remote objects'''
         # purge all previous tasks
-        FileTarget('test.py').remove('both')
-        FileTarget('test.py.bak').remove('both')
+        file_target('test.py').remove('both')
+        file_target('test.py.bak').remove('both')
         script = SoS_Script('''
 [10]
 output: remote('test.py')
