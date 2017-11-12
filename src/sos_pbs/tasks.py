@@ -22,8 +22,8 @@
 
 import os
 from sos.utils import env
-from sos.sos_eval import cfg_interpolate
-from sos.sos_task import TaskEngine, loadTask
+from sos.eval import cfg_interpolate
+from sos.tasks import TaskEngine, loadTask
 from sos.pattern import extract_pattern
 
 class PBS_TaskEngine(TaskEngine):
