@@ -81,7 +81,7 @@ sh:
                 'default_queue': 'local_ts',
                 'sig_mode': 'force',
                 }).run()
-        self.assertTrue(file_target('a.txt').exists())
+        self.assertTrue(file_target('a.txt').target_exists())
 
     @unittest.skipIf(not has_docker, "Docker container not usable")
     def testRemoteTS(self):
@@ -98,7 +98,7 @@ sh:
         self.assertTrue(ret == 0)
         ret = subprocess.call('sos pull ar.txt -c ~/docker.yml --from ts', shell=True)
         self.assertTrue(ret == 0)
-        self.assertTrue(file_target('ar.txt').exists())
+        self.assertTrue(file_target('ar.txt').target_exists())
 
 if __name__ == '__main__':
     unittest.main()

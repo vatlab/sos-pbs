@@ -80,7 +80,7 @@ run:
                 'default_queue': 'docker',
                 'sig_mode': 'force',
                 }).run()
-        self.assertTrue(file_target('result.txt').exists())
+        self.assertTrue(file_target('result.txt').target_exists())
         with open('result.txt') as res:
             self.assertEqual(res.read(), 'a\n')
 
@@ -292,7 +292,7 @@ shutil.copy("tt1.py", f"{{output}}")
                 'default_queue': 'docker',
                 'sig_mode': 'force',
                 }).run()
-        self.assertTrue(file_target('tt1.py.bak').exists('target'))
+        self.assertTrue(file_target('tt1.py.bak').target_exists('target'))
         # the files should be the same
         with open('tt1.py') as ori, open('tt1.py.bak') as bak:
             self.assertEqual(ori.read(), bak.read())
