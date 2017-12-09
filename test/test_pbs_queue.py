@@ -282,7 +282,7 @@ sz = os.path.getmtime('llink')
 output: 'tt1.py.bak'
 task: to_host=r'{}'
 import shutil
-shutil.copy("tt1.py", f"{{output}}")
+shutil.copy("tt1.py", f"{{_output}}")
 '''.format(os.path.join(os.path.abspath('.').upper(), 'tt1.py')))
         wf = script.workflow()
         Base_Executor(wf, config={
@@ -399,7 +399,7 @@ input: remote('test_file.txt')
 output: 'test1.txt'
 task:
 run: expand=True
-    echo {input} >> {output}
+    echo {_input} >> {_output}
 ''')
         wf = script.workflow()
         Base_Executor(wf, config={
@@ -443,7 +443,7 @@ input: remote(A, ['test_file_B.txt'])
 output: 'test1.txt'
 task:
 run: expand=True
-    cat {input} >> {output}
+    cat {_input} >> {_output}
 ''')
         wf = script.workflow()
         Base_Executor(wf, config={
@@ -502,10 +502,10 @@ run:
     touch test.py
 
 [20]
-output: remote(f"{input:R}.bak")
+output: remote(f"{_input:R}.bak")
 task:
 run: expand=True
-    cp {input} {output}
+    cp {_input} {_output}
 ''')
         wf = script.workflow()
         Base_Executor(wf, config={
