@@ -56,13 +56,16 @@ class PBS_TaskEngine(TaskEngine):
         else:
             self.kill_cmd = self.config['kill_cmd']
 
-    def execute_task(self, task_id):
+    def execute_tasks(self, task_ids):
         #
-        if not super(PBS_TaskEngine, self).execute_task(task_id):
+        if not super(PBS_TaskEngine, self).execute_tasks(task_ids):
             return False
 
         try:
-            return self._prepare_script(task_id)
+            for task_id in task_ids:
+                if not self._prepare_script(task_id):
+                    return False
+            return True
         except Exception as e:
             env.logger.error(e)
             return False
