@@ -102,6 +102,7 @@ run: expand=True
                 # do not wait for jobs
                 'wait_for_task': False,
                 'default_queue': 'docker',
+                'max_running_jobs': 5,
                 'sig_mode': 'force',
                 }).run()
         import time
