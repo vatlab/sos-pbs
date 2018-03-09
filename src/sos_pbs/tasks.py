@@ -161,6 +161,10 @@ class PBS_TaskEngine(TaskEngine):
                             f'Failed to extract job_id from "{cmd_output.strip()}" using pattern "{submit_cmd_output}"')
                         job_id = '000000'
                         job.write(f'job_id: {job_id}\n')
+                # Send job id files to remote host so that
+                # 1. the job could be properly killed (with job_id) on remote host (not remotely)
+                # 2. the job status could be perperly probed in case the job was not properly submitted (#911)
+                self.agent.send_task_file(job_id_file)
                 # output job id to stdout
                 self.notify(f'{task_id} ``submitted`` to {self.alias} with job id {job_id}')
                 return True
