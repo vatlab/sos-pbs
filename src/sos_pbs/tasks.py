@@ -142,7 +142,7 @@ class PBS_TaskEngine(TaskEngine):
                 #
                 # try to extract job_id from command output
                 # let us write an job_id file so that we can check status of tasks more easily
-                job_id_file = os.path.join(os.path.expanduser('~'), '.sos', 'tasks', self.alias, task_id + '.job_id')
+                job_id_file = os.path.join(os.path.expanduser('~'), '.sos', 'tasks', task_id + '.job_id')
                 with open(job_id_file, 'w') as job:
                     try:
                         res = extract_pattern(submit_cmd_output, [cmd_output.strip()])
@@ -172,7 +172,7 @@ class PBS_TaskEngine(TaskEngine):
                 raise RuntimeError(f'Failed to submit task {task_id}: {e}')
 
     def _get_job_id(self, task_id):
-        job_id_file = os.path.join(os.path.expanduser('~'), '.sos', 'tasks', self.alias, task_id + '.job_id')
+        job_id_file = os.path.join(os.path.expanduser('~'), '.sos', 'tasks', task_id + '.job_id')
         if not os.path.isfile(job_id_file):
             return {}
         with open(job_id_file) as job:
