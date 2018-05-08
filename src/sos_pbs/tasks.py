@@ -257,7 +257,10 @@ class PBS_TaskEngine(TaskEngine):
             if not line.strip():
                 continue
             task_id, status = line.split('\t')
-            res += f'{task_id}\t{status} (old status)\t'
+            res += f'{task_id}\t{status}\t'
+            # only run kill_cmd on killed or aborted jobs
+            if status.strip() not in ('killed', 'aborted'):
+                continue
 
             job_id = self._get_job_id(task_id)
             if not job_id:
