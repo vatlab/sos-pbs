@@ -264,6 +264,7 @@ class PBS_TaskEngine(TaskEngine):
             res += f'{task_id}\t{status}\t'
             # only run kill_cmd on killed or aborted jobs
             if status.strip() not in ('killed', 'aborted'):
+                res += '.\n'
                 continue
 
             job_id = self._get_job_id(task_id)
