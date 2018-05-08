@@ -30,7 +30,10 @@ before_install:
     - pip install fasteners pygments networkx pydot pydotplus 
     # https://github.com/jupyter/jupyter/issues/150
     - pip install entrypoints jupyter coverage codacy-coverage pytest pytest-cov python-coveralls
-    - pip install sos sos-notebook sos-bash
+    - pip install git+https://github.com/vatlab/sos.git
+    - pip install git+https://github.com/vatlab/sos-notebook.git
+    - python -m sos_notebook.install
+    - pip install git+https://github.com/vatlab/sos-bash.git
     - conda install pandas numpy
 
 sudo: required
@@ -43,7 +46,7 @@ before_script:
 script:
     # coverage does not seem to work well with python 3.6, but it does not really matter because we have coverage report from python 3.5 already
     # SAS and Matlab are not tested
-    - pytest -x -v --cov sos_pbs --cov-report=xml
+    - pytest -x -v --cov-report=xml
       
 after_success:
     - coverage combine

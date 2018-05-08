@@ -142,7 +142,7 @@ class PBS_TaskEngine(TaskEngine):
                 #
                 # try to extract job_id from command output
                 # let us write an job_id file so that we can check status of tasks more easily
-                job_id_file = os.path.join(os.path.expanduser('~'), '.sos', 'tasks', self.alias, task_id + '.job_id')
+                job_id_file = os.path.join(os.path.expanduser('~'), '.sos', 'tasks', task_id + '.job_id')
                 with open(job_id_file, 'w') as job:
                     try:
                         res = extract_pattern(submit_cmd_output, [cmd_output.strip()])
@@ -161,6 +161,10 @@ class PBS_TaskEngine(TaskEngine):
                             f'Failed to extract job_id from "{cmd_output.strip()}" using pattern "{submit_cmd_output}"')
                         job_id = '000000'
                         job.write(f'job_id: {job_id}\n')
+                # Send job id files to remote host so that
+                # 1. the job could be properly killed (with job_id) on remote host (not remotely)
+                # 2. the job status could be perperly probed in case the job was not properly submitted (#911)
+                self.agent.send_task_file(job_id_file)
                 # output job id to stdout
                 self.notify(f'{task_id} ``submitted`` to {self.alias} with job id {job_id}')
                 return True
@@ -168,7 +172,7 @@ class PBS_TaskEngine(TaskEngine):
                 raise RuntimeError(f'Failed to submit task {task_id}: {e}')
 
     def _get_job_id(self, task_id):
-        job_id_file = os.path.join(os.path.expanduser('~'), '.sos', 'tasks', self.alias, task_id + '.job_id')
+        job_id_file = os.path.join(os.path.expanduser('~'), '.sos', 'tasks', task_id + '.job_id')
         if not os.path.isfile(job_id_file):
             return {}
         with open(job_id_file) as job:
