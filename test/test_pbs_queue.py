@@ -622,7 +622,7 @@ run: expand=True
         '''test list hosts using sos status -q'''
         for v in ['0', '1', '3', '4']:
             # ts of type pbs should be in output
-            output = subprocess.check_output(['sos', 'status', '-c', '~/docker.yml', '-q', '-v', v]).decode()
+            output = subprocess.check_output(['sos', 'remote', 'list', '-c', '~/docker.yml', '-v', v]).decode()
             self.assertTrue('ts' in output)
 
 if __name__ == '__main__':
