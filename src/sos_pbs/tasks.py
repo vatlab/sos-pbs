@@ -6,7 +6,8 @@
 import os
 from sos.utils import env
 from sos.eval import cfg_interpolate
-from sos.tasks import TaskEngine, loadTask
+from sos.task_engines import TaskEngine
+from sos.tasks import loadTask
 from sos.pattern import extract_pattern
 
 class PBS_TaskEngine(TaskEngine):
