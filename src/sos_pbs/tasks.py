@@ -73,7 +73,7 @@ class PBS_TaskEngine(TaskEngine):
     def _prepare_script(self, task_id):
         # read the task file and look for runtime info
         #
-        task_file = os.path.join(os.path.expanduser('~'), '.sos', 'tasks', self.alias, task_id + '.task')
+        task_file = os.path.join(os.path.expanduser('~'), '.sos', 'tasks', task_id + '.task')
         params = loadTask(task_file)
         sos_dict = params.sos_dict
 
@@ -102,7 +102,7 @@ class PBS_TaskEngine(TaskEngine):
             raise ValueError(f'Failed to generate job file for task {task_id}: {e}')
 
         # now we need to write a job file
-        job_file = os.path.join(os.path.expanduser('~'), '.sos', 'tasks', self.alias, task_id + '.sh')
+        job_file = os.path.join(os.path.expanduser('~'), '.sos', 'tasks', task_id + '.sh')
         # do not translate newline under windows because the script will be executed
         # under linux/mac
         with open(job_file, 'w', newline='') as job:
