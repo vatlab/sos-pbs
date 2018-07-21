@@ -40,7 +40,11 @@ ADD authorized_keys /root/.ssh/authorized_keys
 
 # install sos on the remote host
 RUN  pip install spyder jedi notebook nbconvert nbformat pyyaml psutil tqdm
-RUN  pip install fasteners pygments ipython ptpython networkx pydotplus sos sos-notebook sos-bash
+RUN  pip install fasteners pygments ipython ptpython networkx pydotplus
+RUN  pip install git+https://github.com/vatlab/sos.git
+RUN  pip install git+https://github.com/vatlab/sos-notebook.git
+RUN  pip install git+https://github.com/vatlab/sos-bash.git
+RUN  python -m sos_notebook.install
 
 ARG  SHA=LATEST
 RUN  SHA=$SHA git clone http://github.com/vatlab/sos-pbs sos-pbs
