@@ -57,8 +57,7 @@ class PBS_TaskEngine(TaskEngine):
     def _prepare_script(self, task_id):
         # read the task file and look for runtime info
         #
-        task_file = os.path.join(os.path.expanduser('~'), '.sos', 'tasks', task_id + '.task')
-        params = TaskFile(task_file).params
+        params = TaskFile(task_id).params
         sos_dict = params.sos_dict
 
         # for this task, we will need walltime, nodes, cores, mem
@@ -172,7 +171,7 @@ class PBS_TaskEngine(TaskEngine):
         return self.agent.check_output(cmd)
 
     def query_tasks(self, tasks=None, verbosity=1, html=False, **kwargs):
-        if verbosity <= 2:
+        if verbosity <= 3:
             status_lines = super(PBS_TaskEngine, self).query_tasks(tasks, verbosity, html, **kwargs)
             # there is a change that a job is submitted, but failed before the sos command is executed
             # so we will have to ask the task engine about the submitted jobs #608
