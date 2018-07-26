@@ -7,7 +7,7 @@ import os
 from sos.utils import env
 from sos.eval import cfg_interpolate
 from sos.task_engines import TaskEngine
-from sos.tasks import loadTask
+from sos.tasks import TaskFile
 from sos.pattern import extract_pattern
 
 class PBS_TaskEngine(TaskEngine):
@@ -58,7 +58,7 @@ class PBS_TaskEngine(TaskEngine):
         # read the task file and look for runtime info
         #
         task_file = os.path.join(os.path.expanduser('~'), '.sos', 'tasks', task_id + '.task')
-        params = loadTask(task_file)
+        params = TaskFile(task_file).params
         sos_dict = params.sos_dict
 
         # for this task, we will need walltime, nodes, cores, mem
