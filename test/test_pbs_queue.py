@@ -42,7 +42,8 @@ class TestPBSQueue(unittest.TestCase):
 
     def tearDown(self):
         for f in self.temp_files:
-            file_target(f).remove('both')
+            if file_target(f).exists():
+                file_target(f).unlink()
 
 
     @unittest.skipIf(not has_docker, "Docker container not usable")
@@ -258,7 +259,8 @@ sz = os.path.getmtime('llink')
     @unittest.skipIf(not os.path.exists(os.path.expanduser('~').upper()) or not has_docker, 'Skip test for case sensitive file system')
     def testCaseInsensitiveLocalPath(self):
         '''Test path_map from a case insensitive file system.'''
-        file_target('test_pbs_queue.py.bak').remove('both')
+        if file_target('test_pbs_queue.py.bak').exists():
+            file_target('test_pbs_queue.py.bak').unlink()
         with open('tt1.py', 'w') as tt1:
             tt1.write('soemthing')
         script = SoS_Script('''
@@ -312,7 +314,7 @@ run: expand=True
     def testSoSPurge(self):
         '''Test purge tasks'''
         # purge all previous tasks
-        subprocess.check_output('sos purge -c ~/docker.yml -q ts', shell=True)
+        subprocess.check_output('sos purge --all -c ~/docker.yml -q ts', shell=True)
         script = SoS_Script('''
 [10]
 input: for_each={'i': range(3)}
@@ -347,11 +349,11 @@ run: expand=True
 
         subprocess.check_output('sos purge {} -c ~/docker.yml -q ts'.format(tasks[0]), shell=True)
         # there should be 2 more tasks
-        out = subprocess.check_output('sos status -c ~/docker.yml -q docker -v1', shell=True).decode()
+        out = subprocess.check_output('sos status --all -c ~/docker.yml -q docker -v1', shell=True).decode()
         self.assertEqual(out.strip().count('\n'), 1, 'Expect two lines: {}'.format(out))
         # show be ok
         subprocess.check_output('sos purge -c ~/docker.yml -q docker', shell=True)
-        out = subprocess.check_output('sos status -c ~/docker.yml -q docker -v1', shell=True).decode()
+        out = subprocess.check_output('sos status --all -c ~/docker.yml -q docker -v1', shell=True).decode()
         self.assertEqual(out.strip().count('\n'), 0)
 
 
@@ -376,7 +378,8 @@ run:
         # this file is remote only
         self.assertFalse(os.path.isfile('test_file.txt'))
         #
-        file_target('test1.txt').remove('both')
+        if file_target('test1.txt').exists():
+            file_target('test1.txt').unlink()
         script = SoS_Script('''
 [10]
 input: remote('test_file.txt')
@@ -419,7 +422,8 @@ run:
         self.assertFalse(os.path.isfile('test_file_A.txt'))
         self.assertFalse(os.path.isfile('test_file_B.txt'))
         #
-        file_target('test1.txt').remove('both')
+        if file_target('test1.txt').exists():
+            file_target('test1.txt').unlink()
         script = SoS_Script('''
 [10]
 A = 'test_file_A.txt'
@@ -450,8 +454,10 @@ run: expand=True
     def testRemoteOutput(self):
         '''Test remote target'''
         # purge all previous tasks
-        file_target('test_file.txt').remove('both')
-        file_target('test_file1.txt').remove('both')
+        if file_target('test_file.txt').exists():
+            file_target('test_file.txt').unlink()
+        if file_target('test_file1.txt').exists():
+            file_target('test_file1.txt').unlink()
         script = SoS_Script('''
 [10]
 output: remote('test_file.txt'), 'test_file1.txt'
@@ -476,8 +482,10 @@ run:
     def testDelayedInterpolation(self):
         '''Test delayed interpolation with expression involving remote objects'''
         # purge all previous tasks
-        file_target('test.py').remove('both')
-        file_target('test.py.bak').remove('both')
+        if file_target('test.py').exists():
+            file_target('test.py').unlink()
+        if file_target('test.py.bak').exists():
+            file_target('test.py.bak').unlink()
         script = SoS_Script('''
 [10]
 output: remote('test.py')
