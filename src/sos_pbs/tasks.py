@@ -149,7 +149,7 @@ class PBS_TaskEngine(TaskEngine):
                 # 2. the job status could be perperly probed in case the job was not properly submitted (#911)
                 self.agent.send_task_file(job_id_file)
                 # output job id to stdout
-                self.notify(f'{task_id} ``submitted`` to {self.alias} with job id {job_id}')
+                env.logger.info(f'{task_id} ``submitted`` to {self.alias} with job id {job_id}')
                 return True
             except Exception as e:
                 raise RuntimeError(f'Failed to submit task {task_id}: {e}')
