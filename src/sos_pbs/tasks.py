@@ -114,6 +114,9 @@ class PBS_TaskEngine(TaskEngine):
                 except Exception as e:
                     raise RuntimeError(f'Failed to submit task {task_id}: {e}')
 
+                if not cmd_output:
+                    raise RuntimeError(f'Failed to submit task {task_id} with command {cmd}. No output returned.')
+
                 if 'submit_cmd_output' not in self.config:
                     submit_cmd_output = '{job_id}'
                 else:
@@ -127,23 +130,14 @@ class PBS_TaskEngine(TaskEngine):
                 # let us write an job_id file so that we can check status of tasks more easily
                 job_id_file = os.path.join(os.path.expanduser('~'), '.sos', 'tasks', task_id + '.job_id')
                 with open(job_id_file, 'w') as job:
-                    try:
-                        res = extract_pattern(submit_cmd_output, [cmd_output.strip()])
-                        if 'job_id' not in res or len(res['job_id']) != 1:
-                            env.logger.warning(
-                                f'Failed to extract job_id from "{cmd_output.strip()}" using pattern "{submit_cmd_output}"')
-                            job_id = '000000'
-                            job.write(f'job_id: {job_id}\n')
-                        else:
-                            job_id = res['job_id'][0]
-                            # other variables
-                            for k,v in res.items():
-                                job.write(f'{k}: {v[0]}\n')
-                    except Exception as e:
-                        env.logger.warning(
-                            f'Failed to extract job_id from "{cmd_output.strip()}" using pattern "{submit_cmd_output}"')
-                        job_id = '000000'
-                        job.write(f'job_id: {job_id}\n')
+                    res = extract_pattern(submit_cmd_output, [cmd_output.strip()])
+                    if 'job_id' not in res or len(res['job_id']) != 1 or res['job_id'][0] is None:
+                       raise RuntimeError(f'Failed to extract job_id from "{cmd_output.strip()}" using pattern "{submit_cmd_output}"')
+                    else:
+                        job_id = res['job_id'][0]
+                        # other variables
+                        for k,v in res.items():
+                            job.write(f'{k}: {v[0]}\n')
                 # Send job id files to remote host so that
                 # 1. the job could be properly killed (with job_id) on remote host (not remotely)
                 # 2. the job status could be perperly probed in case the job was not properly submitted (#911)
