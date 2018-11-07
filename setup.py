@@ -38,7 +38,7 @@ setup(name = "sos-pbs",
     packages = find_packages('src'),
     package_dir = {'': 'src'},
     install_requires=[
-          'sos>=0.17.0',
+          'sos>=0.17.4',
       ],
     entry_points= '''
 [sos_taskengines]
