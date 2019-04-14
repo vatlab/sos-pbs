@@ -65,7 +65,8 @@ class PBS_TaskEngine(TaskEngine):
         runtime = self.config
         # we also use saved verbosity and sig_mode because the current sig_mode might have been changed
         # (e.g. in Jupyter) after the job is saved.
-        runtime.update({x:sos_dict['_runtime'][x] for x in ('nodes', 'cores', 'mem', 'walltime', 'cur_dir', 'home_dir', 'verbosity', 'sig_mode', 'run_mode') if x in sos_dict['_runtime']})
+
+        runtime.update({x:sos_dict['_runtime'][x] for x in ('nodes', 'cores', 'mem', 'walltime', 'workdir', 'verbosity', 'sig_mode', 'run_mode') if x in sos_dict['_runtime']})
         if 'name' in sos_dict['_runtime']:
             env.logger.warning("Runtime option name is deprecated. Please use tags to keep track of task names.")
         runtime['task'] = task_id
