@@ -57,19 +57,17 @@ class PBS_TaskEngine(TaskEngine):
     def _prepare_script(self, task_id):
         # read the task file and look for runtime info
         #
-        params = TaskFile(task_id).params
-        sos_dict = params.sos_dict
-
+        task_runtime = TaskFile(task_id).runtime
         # for this task, we will need walltime, nodes, cores, mem
         # however, these could be fixed in the job template and we do not need to have them all in the runtime
         runtime = self.config
         # we also use saved verbosity and sig_mode because the current sig_mode might have been changed
         # (e.g. in Jupyter) after the job is saved.
 
-        runtime.update({x:sos_dict['_runtime'][x] for x in ('nodes', 'cores', 'mem', 'walltime', 'workdir', 'verbosity', 'sig_mode', 'run_mode') if x in sos_dict['_runtime']})
+        runtime.update({x:task_runtime['_runtime'][x] for x in ('nodes', 'cores', 'mem', 'walltime', 'workdir', 'verbosity', 'sig_mode', 'run_mode') if x in task_runtime['_runtime']})
         # workdir should exist, cur_dir is kept for backward compatibility
         runtime['cur_dir'] = runtime['workdir']
-        if 'name' in sos_dict['_runtime']:
+        if 'name' in task_runtime['_runtime']:
             env.logger.warning("Runtime option name is deprecated. Please use tags to keep track of task names.")
         runtime['task'] = task_id
         # this is also deprecated
@@ -166,7 +164,7 @@ class PBS_TaskEngine(TaskEngine):
 #         job_id.update({'task': task_id, 'verbosity': 1})
 #         cmd = cfg_interpolate(self.status_cmd, job_id)
 #         return self.agent.check_output(cmd)
-# 
+#
 #     def query_tasks(self, tasks=None, verbosity=1, html=False, **kwargs):
 #         if verbosity <= 3:
 #             status_lines = super(PBS_TaskEngine, self).query_tasks(tasks, verbosity, html, **kwargs)
@@ -208,7 +206,7 @@ class PBS_TaskEngine(TaskEngine):
 #                         env.logger.trace(f'Failed to query status for task {task_id}: {e}')
 #                         status_lines = status_lines.replace('submitted', 'failed', 1)
 #                 return status_lines
-# 
+#
 #         # for more verbose case, we will call pbs's status_cmd to get more accurate information
 #         status_lines = super(PBS_TaskEngine, self).query_tasks(tasks, 1)
 #         res = ''
