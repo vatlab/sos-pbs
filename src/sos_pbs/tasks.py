@@ -67,6 +67,8 @@ class PBS_TaskEngine(TaskEngine):
         # (e.g. in Jupyter) after the job is saved.
 
         runtime.update({x:sos_dict['_runtime'][x] for x in ('nodes', 'cores', 'mem', 'walltime', 'workdir', 'verbosity', 'sig_mode', 'run_mode') if x in sos_dict['_runtime']})
+        # workdir should exist, cur_dir is kept for backward compatibility
+        runtime['cur_dir'] = runtime['workdir']
         if 'name' in sos_dict['_runtime']:
             env.logger.warning("Runtime option name is deprecated. Please use tags to keep track of task names.")
         runtime['task'] = task_id
