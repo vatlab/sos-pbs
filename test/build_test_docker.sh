@@ -48,7 +48,7 @@ RUN  python -m sos_notebook.install
 
 ARG  SHA=LATEST
 RUN  SHA=$SHA git clone http://github.com/vatlab/sos-pbs sos-pbs
-RUN  cd sos-pbs && pip install . -U
+RUN  cd sos-pbs && pip install -e .
 
 RUN  echo "export TS_SLOTS=10" >> /root/.bash_profile
 
@@ -61,7 +61,7 @@ RUN  echo "        queue_type: pbs" >> $HOME/.sos/hosts.yml
 RUN  echo "        status_check_interval: 5" >> $HOME/.sos/hosts.yml
 RUN  echo "        job_template: |" >> $HOME/.sos/hosts.yml
 RUN  echo "            #!/bin/bash" >> $HOME/.sos/hosts.yml
-RUN  echo "            cd {cur_dir}" >> $HOME/.sos/hosts.yml
+RUN  echo "            cd {workdir}" >> $HOME/.sos/hosts.yml
 RUN  echo "            sos execute {task} -v {verbosity} -s {sig_mode} {'--dryrun' if run_mode == 'dryrun' else ''}" >> $HOME/.sos/hosts.yml
 RUN  echo "        max_running_jobs: 100" >> $HOME/.sos/hosts.yml
 RUN  echo "        submit_cmd: tsp -L {task} sh {job_file}" >> $HOME/.sos/hosts.yml
@@ -140,7 +140,6 @@ cat >> ~/docker.yml << 'HERE'
         status_check_interval: 5
         job_template: |
             #!/bin/bash
-            cd {cur_dir}
             sos execute {task} -v {verbosity} -s {sig_mode} {'--dryrun' if run_mode == 'dryrun' else ''}
         max_running_jobs: 100
         submit_cmd: tsp -L {task} sh {job_file}
@@ -153,7 +152,6 @@ cat >> ~/docker.yml << 'HERE'
         status_check_interval: 5
         job_template: |
             #!/bin/bash
-            cd {cur_dir}
             sos execute {task} -v {verbosity} -s {sig_mode} {'--dryrun' if run_mode == 'dryrun' else ''}
         max_running_jobs: 100
         submit_cmd: tsp -L {task} sh {job_file}
