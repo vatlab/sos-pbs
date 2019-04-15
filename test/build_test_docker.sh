@@ -53,7 +53,8 @@ RUN  cd sos-pbs && pip install -e .
 RUN  echo "export TS_SLOTS=10" >> /root/.bash_profile
 
 RUN  mkdir $HOME/.sos
-RUN  echo "hosts:" > $HOME/.sos/hosts.yml
+RUN  echo "localhost: ts" > $HOME/.sos/hosts.yml
+RUN  echo "hosts:" >> $HOME/.sos/hosts.yml
 RUN  echo "    ts:" >> $HOME/.sos/hosts.yml
 RUN  echo "        description: task spooler on the docker machine" >> $HOME/.sos/hosts.yml
 RUN  echo "        address: localhost" >> $HOME/.sos/hosts.yml
