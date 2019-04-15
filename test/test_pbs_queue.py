@@ -158,7 +158,7 @@ run: expand=True
     @unittest.skipIf(sys.platform == 'win32' or not has_docker, 'No symbloc link problem under win32 or no docker')
     def testToHostRename(self):
         '''Test to_host with dictionary'''
-        script = SoS_Script('''
+        script = SoS_Script(r'''
 [1]
 sh:
    echo "1" > 1.txt
