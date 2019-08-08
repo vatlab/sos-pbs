@@ -13,6 +13,10 @@ class PBSTaskExecutor(BaseTaskExecutor):
 
     def execute_master_task(self, task_id, params, master_runtime, sig_content):
 
+        # regular trunk_workers = ??
+        if isinstance(params.num_workers, int):
+            return super(PBSTaskExecutor, self).execute_master_task(task_id, params, master_runtime, sig_content)
+
         # used for self._collect_subtask_ids to determine master stdout and stderr
         self.master_stdout = os.path.join(
             os.path.expanduser('~'), '.sos', 'tasks', task_id + '.out')
