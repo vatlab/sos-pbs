@@ -3,13 +3,26 @@
 # Copyright (c) Bo Peng and the University of Texas MD Anderson Cancer Center
 # Distributed under the terms of the 3-clause BSD License.
 
+import os
+import zmq
+
+from threading import Event
+
 from sos.task_executor import BaseTaskExecutor
+from sos.controller import (Controller, connect_controllers,
+                            disconnect_controllers, create_socket, close_socket,
+                            request_answer_from_controller,
+                            send_message_to_controller)
+from sos.utils import env, get_localhost_ip
+from sos.messages import decode_msg
+
+from collections.abc import Sequence
 
 
-class PBSTaskExecutor(BaseTaskExecutor):
+class PBS_TaskExecutor(BaseTaskExecutor):
 
     def __init__(self, *args, **kwargs):
-        super(PBSTaskExecutor, self).__init__(*args, **kwargs)
+        super(PBS_TaskExecutor, self).__init__(*args, **kwargs)
 
     def _parse_num_workers(self, num_workers):
         # return number of nodes and workers
@@ -32,19 +45,23 @@ class PBSTaskExecutor(BaseTaskExecutor):
         elif num_workers is None:
             return None, None
         else:
-            raise RuntimeError(f"Unacceptable value for parameter trunk_workers {num_workers}")
+            raise RuntimeError(
+                f"Unacceptable value for parameter trunk_workers {num_workers}")
 
     def execute_master_task(self, task_id, params, master_runtime, sig_content):
 
-        n_nodes, n_procs = self._parse_num_workers(self.worker_procs)
+        n_nodes, n_procs = self._parse_num_workers(env.config['worker_procs'])
 
         # regular trunk_workers = ?? (0 was used as default)
-        if (isinstance(params.num_workers, int) and params.num_workers > 1) or n_nodes == 1:
-            return super(PBSTaskExecutor, self).execute_master_task(task_id, params, master_runtime, sig_content)
+        num_workers = params.sos_dict['_runtime']['num_workers']
+        if (isinstance(num_workers, int) and num_workers > 1) or n_nodes == 1:
+            return super(PBS_TaskExecutor,
+                         self).execute_master_task(task_id, params,
+                                                   master_runtime, sig_content)
 
         # case :
         #
-        # 1. users do not speicy trunk_workers (params.num_workers is None or 0)
+        # 1. users do not speicy trunk_workers (num_workers is None or 0)
         #    and -j is hard coded, ok.
         # we use all workers specified by -j, which is OK
         #
@@ -52,11 +69,13 @@ class PBSTaskExecutor(BaseTaskExecutor):
         #  and it will be a single task, executed by base executor.
         #
         # 3. users specify trunk_workers, should should match what we have or change -j
-        if params.num_workers is not None: # should be a sequence
-            if not params.num_workers):
-                params.num_workers = self.worker_proces
-            elif len(params.num_workers) != n_nodes:
-                env.logger.warning(f'task options trunk_workers={params.num_workers} is inconsistent with command line option -j {self.worker_procs}')
+        if num_workers is not None:  # should be a sequence
+            if not num_workers:
+                num_workers = env.config['worker_procs']
+            elif len(num_workers) != n_nodes:
+                env.logger.warning(
+                    f'task options trunk_workers={num_workers} is inconsistent with command line option -j {env.config["worker_procs"]}'
+                )
 
         #
         # Now, we will need to start a controller and multiple worker...
@@ -72,10 +91,29 @@ class PBSTaskExecutor(BaseTaskExecutor):
         if os.path.exists(self.master_stderr):
             open(self.master_stderr, 'w').close()
 
-        # if this is a master task, calling each sub task
-        if params.num_workers > 1:
-            from multiprocessing.pool import Pool
-            p = Pool(params.num_workers)
+        env.zmq_context = zmq.Context()
+
+        # control panel in a separate thread, connected by zmq socket
+        ready = Event()
+        self.controller = Controller(ready)
+        self.controller.start()
+        # wait for the thread to start with a signature_req saved to env.config
+        ready.wait()
+
+        connect_controllers(env.zmq_context)
+
+        try:
+
+            # start a result receving socket
+            self.result_pull_socket = create_socket(env.zmq_context, zmq.PULL,
+                                                    'substep result collector')
+            local_ip = get_localhost_ip()
+            port = self.result_pull_socket.bind_to_random_port(
+                f'tcp://{local_ip}')
+            env.config['sockets'][
+                'result_push_socket'] = f'tcp://{local_ip}:{port}'
+
+            # send tasks to the controller
             results = []
             for sub_id, sub_params in params.task_stack:
                 if hasattr(params, 'common_dict'):
@@ -84,30 +122,37 @@ class PBSTaskExecutor(BaseTaskExecutor):
                     x: master_runtime.get(x, {}) for x in ('_runtime', sub_id)
                 }
                 sub_sig = {sub_id: sig_content.get(sub_id, {})}
-                results.append(
-                    p.apply_async(
-                        self._execute_task,
-                        (sub_id, sub_params, sub_runtime, sub_sig, True),
-                        callback=self._append_subtask_outputs))
-            for idx, r in enumerate(results):
-                results[idx] = r.get()
-            p.close()
-            p.join()
-        else:
-            results = []
-            for sub_id, sub_params in params.task_stack:
-                if hasattr(params, 'common_dict'):
-                    sub_params.sos_dict.update(params.common_dict)
-                sub_runtime = {
-                    x: master_runtime.get(x, {}) for x in ('_runtime', sub_id)
-                }
-                sub_sig = {sub_id: sig_content.get(sub_id, {})}
-                res = self.execute_single_task(sub_id, sub_params, sub_runtime,
-                                               sub_sig, True)
+
+                # submit tasks
+                send_message_to_controller([
+                    'task',
+                    dict(
+                        task_id=sub_id,
+                        params=sub_params,
+                        runtime=sub_runtime,
+                        sig_content=sub_sig,
+                        config=env.config,
+                        quiet=True)
+                ])
+
+            for idx in range(len(params.task_stack)):
+                res = decode_msg(self.result_pull_socket.recv())
                 try:
                     self._append_subtask_outputs(res)
                 except Exception as e:
-                    env.logger.warning(
-                        f'Failed to copy result of subtask {tid}: {e}')
+                    env.logger.warning(f'Failed to copy result of subtask: {e}')
                 results.append(res)
+            succ = True
+        except Exception as e:
+            env.logger.error(f'Failed to execute master task {task_id}: {e}')
+            succ = False
+        finally:
+            # end progress bar when the master workflow stops
+            close_socket(self.result_pull_socket)
+            env.log_to_file('EXECUTOR', f'Stop controller from {os.getpid()}')
+            request_answer_from_controller(['done', succ])
+            env.log_to_file('EXECUTOR', 'disconntecting master')
+            self.controller.join()
+            disconnect_controllers(env.zmq_context if succ else None)
+
         return self._combine_results(task_id, results)
