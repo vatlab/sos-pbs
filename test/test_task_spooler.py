@@ -79,7 +79,7 @@ sh:
 ''')
         ret = subprocess.call('sos run remote_ts -c ~/docker.yml -q ts', shell=True)
         self.assertTrue(ret == 0)
-        ret = subprocess.call('sos pull ar.txt -c ~/docker.yml --from ts', shell=True)
+        ret = subprocess.call('sos remote pull ts --files ar.txt -c ~/docker.yml', shell=True)
         self.assertTrue(ret == 0)
         self.assertTrue(file_target('ar.txt').target_exists())
 
