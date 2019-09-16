@@ -58,6 +58,9 @@ class PBS_TaskEngine(TaskEngine):
         # read the task file and look for runtime info
         #
         task_runtime = TaskFile(task_id).runtime
+        # individual task can have its own _runtime in sos_dict
+        task_runtime['_runtime'].update(TaskFile(task_id).params.sos_dict.get('_runtime', {}))
+
         # for this task, we will need walltime, nodes, cores, mem
         # however, these could be fixed in the job template and we do not need to have them all in the runtime
         runtime = self.config
