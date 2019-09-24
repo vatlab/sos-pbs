@@ -51,7 +51,7 @@ class PBS_TaskEngine(TaskEngine):
                     return False
             return True
         except Exception as e:
-            env.logger.error(e)
+            env.logger.error(str(e))
             return False
 
     def _prepare_script(self, task_id):
