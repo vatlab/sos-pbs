@@ -12,9 +12,18 @@ with open('src/sos_pbs/_version.py') as version:
             __version__ = eval(line.split('=')[1])
             break
 
+
+CURRENT_DIR = os.path.abspath(os.path.dirname(__file__))
+
+def get_long_description():
+    with open(os.path.join(CURRENT_DIR, "README.md"), "r") as ld_file:
+        return ld_file.read()
+
 setup(name = "sos-pbs",
     version = __version__,
     description = 'PBS task engine for Script of Scripts (SoS)',
+    long_description=get_long_description(),
+    long_description_content_type="text/markdown",
     author = 'Bo Peng',
     url = 'https://github.com/vatlab/SOS',
     author_email = 'bpeng@mdanderson.org',
