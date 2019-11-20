@@ -52,5 +52,9 @@ setup(name = "sos-pbs",
     entry_points= '''
 [sos_taskengines]
 pbs = sos_pbs.task_engine:PBS_TaskEngine
+
+[sos_workflowengines]
+pbs = sos_pbs.workflow_engine:PBS_WorkflowEngine
+
 '''
 )

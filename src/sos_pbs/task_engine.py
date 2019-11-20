@@ -115,7 +115,7 @@ class PBS_TaskEngine(TaskEngine):
             job.write(job_text)
 
         # then copy the job file to remote host if necessary
-        self.agent.send_task_file(job_file)
+        self.agent.send_job_file(job_file)
 
         if runtime['run_mode'] == 'dryrun':
             try:
@@ -178,7 +178,7 @@ class PBS_TaskEngine(TaskEngine):
             # Send job id files to remote host so that
             # 1. the job could be properly killed (with job_id) on remote host (not remotely)
             # 2. the job status could be perperly probed in case the job was not properly submitted (#911)
-            self.agent.send_task_file(job_id_file)
+            self.agent.send_job_file(job_id_file)
             # output job id to stdout
             env.logger.info(
                 f'{task_id} ``submitted`` to {self.alias} with job id {job_id}')
