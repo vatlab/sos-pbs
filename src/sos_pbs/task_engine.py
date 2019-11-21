@@ -19,17 +19,21 @@ class PBS_TaskEngine(TaskEngine):
         super(PBS_TaskEngine, self).__init__(agent)
         # we have self.config for configurations
         #
-        # job_template
+        # task_template
         # submit_cmd
         #
         # => status_cmd (perhaps not needed)
         # => kill_cmd (perhaps not needed)
-        if 'job_template' in self.config:
-            self.job_template = self.config['job_template'].replace(
+        if 'task_template' in self.config:
+            self.task_template = self.config['task_template'].replace(
+                '\r\n', '\n')
+        elif 'job_template' in self.config:
+            env.logger.warning('job_template for host configuration is deprecated. Please use task_template instead.')
+            self.task_template = self.config['job_template'].replace(
                 '\r\n', '\n')
         else:
             raise ValueError(
-                f'A job_template is required for queue {self.alias}')
+                f'A task_template is required for queue {self.alias}')
 
         if 'submit_cmd' not in self.config:
             raise ValueError(
@@ -101,7 +105,7 @@ class PBS_TaskEngine(TaskEngine):
 
         # let us first prepare a task file
         try:
-            job_text = cfg_interpolate(self.job_template, runtime)
+            job_text = cfg_interpolate(self.task_template, runtime)
         except Exception as e:
             raise ValueError(
                 f'Failed to generate job file for task {task_id}: {e}')

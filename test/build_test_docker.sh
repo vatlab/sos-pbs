@@ -60,7 +60,7 @@ RUN  echo "        description: task spooler on the docker machine" >> $HOME/.so
 RUN  echo "        address: localhost" >> $HOME/.sos/hosts.yml
 RUN  echo "        queue_type: pbs" >> $HOME/.sos/hosts.yml
 RUN  echo "        status_check_interval: 5" >> $HOME/.sos/hosts.yml
-RUN  echo "        job_template: |" >> $HOME/.sos/hosts.yml
+RUN  echo "        task_template: |" >> $HOME/.sos/hosts.yml
 RUN  echo "            #!/bin/bash" >> $HOME/.sos/hosts.yml
 RUN  echo "            cd {workdir}" >> $HOME/.sos/hosts.yml
 RUN  echo "            sos execute {task} -v {verbosity} -s {sig_mode} {'--dryrun' if run_mode == 'dryrun' else ''}" >> $HOME/.sos/hosts.yml
@@ -68,7 +68,7 @@ RUN  echo "        max_running_jobs: 100" >> $HOME/.sos/hosts.yml
 RUN  echo "        submit_cmd: tsp -L {task} sh {job_file}" >> $HOME/.sos/hosts.yml
 RUN  echo "        status_cmd: tsp -s {job_id}" >> $HOME/.sos/hosts.yml
 RUN  echo "        kill_cmd: tsp -r {job_id}" >> $HOME/.sos/hosts.yml
-		
+
 EXPOSE 22
 CMD ["/usr/sbin/sshd", "-D"]
 HERE
@@ -101,7 +101,7 @@ remote_user: root
 limited:
     max_cores: 1
     max_mem: 1G
-   
+
 hosts:
     localhost:
         description: localhost
@@ -139,7 +139,7 @@ HERE
 cat >> ~/docker.yml << 'HERE'
         queue_type: pbs
         status_check_interval: 5
-        job_template: |
+        task_template: |
             #!/bin/bash
             sos execute {task} -v {verbosity} -s {sig_mode} {'--dryrun' if run_mode == 'dryrun' else ''}
         max_running_jobs: 100
@@ -151,7 +151,7 @@ cat >> ~/docker.yml << 'HERE'
         address: localhost
         queue_type: pbs
         status_check_interval: 5
-        job_template: |
+        task_template: |
             #!/bin/bash
             sos execute {task} -v {verbosity} -s {sig_mode} {'--dryrun' if run_mode == 'dryrun' else ''}
         max_running_jobs: 100
