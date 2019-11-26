@@ -50,13 +50,13 @@ class PBS_WorkflowEngine(WorkflowEngine):
 
         if 'run_mode' in self.config and self.config['run_mode'] == 'dryrun':
             try:
-                cmd = f'bash ~/.sos/workflows/{self.workflow_id}.sh'
+                cmd = f'bash ~/.sos/workflows/{self.job_name}.sh'
                 print(self.agent.check_output(cmd))
             except Exception as e:
-                raise RuntimeError(f'Failed to submit workflow {self.workflow_id}: {e}')
+                raise RuntimeError(f'Failed to submit workflow {self.job_name}: {e}')
             return
         #
-        self.template_args['job_file'] = f'~/.sos/workflows/{self.workflow_id}.sh'
+        self.template_args['job_file'] = f'~/.sos/workflows/{self.job_name}.sh'
         # now we need to figure out a command to submit the workflow
         try:
             cmd = cfg_interpolate(self.submit_cmd, self.template_args)
@@ -64,19 +64,19 @@ class PBS_WorkflowEngine(WorkflowEngine):
             raise ValueError(
                 f'Failed to generate job submission command from template "{self.submit_cmd}": {e}'
             )
-        env.logger.debug(f'submit {self.workflow_id}: {cmd}')
+        env.logger.debug(f'submit {self.job_name}: {cmd}')
         try:
             cmd_output = self.agent.check_output(
                 cmd, stderr=subprocess.STDOUT).strip()
         except subprocess.CalledProcessError as e:
             raise RuntimeError(
-                f'Failed to submit workflow {self.workflow_id}:\n{e.output.decode()}')
+                f'Failed to submit workflow {self.job_name}:\n{e.output.decode()}')
         except Exception as e:
-            raise RuntimeError(f'Failed to submit workflow {self.workflow_id}:\n{e}')
+            raise RuntimeError(f'Failed to submit workflow {self.job_name}:\n{e}')
 
         if not cmd_output:
             raise RuntimeError(
-                f'Failed to submit workflow {self.workflow_id} with command {cmd}. No output returned.'
+                f'Failed to submit workflow {self.job_name} with command {cmd}. No output returned.'
             )
 
         if 'submit_cmd_output' not in self.config:
@@ -93,7 +93,7 @@ class PBS_WorkflowEngine(WorkflowEngine):
         # try to extract job_id from command output
         # let us write an job_id file so that we can check status of workflows more easily
         job_id_file = os.path.join(
-            os.path.expanduser('~'), '.sos', 'workflows', self.workflow_id + '.job_id')
+            os.path.expanduser('~'), '.sos', 'workflows', self.job_name + '.job_id')
         with open(job_id_file, 'w') as job:
             res = extract_pattern(submit_cmd_output, [cmd_output.strip()])
             if 'job_id' not in res or len(
@@ -113,14 +113,14 @@ class PBS_WorkflowEngine(WorkflowEngine):
             self.agent.send_job_file(job_id_file, dir='workflows')
             # output job id to stdout
             env.logger.info(
-                f'{self.workflow_id} ``submitted`` to {self.alias} with job id {job_id}')
+                f'{self.job_name} ``submitted`` to {self.alias} with job id {job_id}')
             return True
         except Exception as e:
-            raise RuntimeError(f'Failed to submit workflow {self.workflow_id}: {e}')
+            raise RuntimeError(f'Failed to submit workflow {self.job_name}: {e}')
 
-    def _get_job_id(self, workflow_id):
+    def _get_job_id(self, job_name):
         job_id_file = os.path.join(
-            os.path.expanduser('~'), '.sos', 'workflows', workflow_id + '.job_id')
+            os.path.expanduser('~'), '.sos', 'workflows', job_name + '.job_id')
         if not os.path.isfile(job_id_file):
             return {}
         with open(job_id_file) as job:
