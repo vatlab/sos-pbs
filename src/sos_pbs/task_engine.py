@@ -94,7 +94,7 @@ class PBS_TaskEngine(TaskEngine):
                 "Runtime option name is deprecated. Please use tags to keep track of task names."
             )
         runtime['task'] = task_id
-        # this is also deprecated
+        # job_name is recommended because of compatibility with workflow_template
         runtime['job_name'] = task_id
         if 'nodes' not in runtime:
             runtime['nodes'] = 1
