@@ -28,7 +28,9 @@ class PBS_TaskEngine(TaskEngine):
             self.task_template = self.config['task_template'].replace(
                 '\r\n', '\n')
         elif 'job_template' in self.config:
-            env.logger.warning('job_template for host configuration is deprecated. Please use task_template instead.')
+            env.logger.warning(
+                'job_template for host configuration is deprecated. Please use task_template instead.'
+            )
             self.task_template = self.config['job_template'].replace(
                 '\r\n', '\n')
         else:
@@ -81,12 +83,9 @@ class PBS_TaskEngine(TaskEngine):
         # we also use saved verbosity and sig_mode because the current sig_mode might have been changed
         # (e.g. in Jupyter) after the job is saved.
 
-        runtime.update({
-            x: task_runtime['_runtime'][x]
-            for x in ('nodes', 'cores', 'mem', 'walltime', 'workdir',
-                      'verbosity', 'sig_mode', 'run_mode')
-            if x in task_runtime['_runtime']
-        })
+        # task_runtime['_runtime'] can contain arbitrary keyword parameter that could override
+        # self.config from configuration files.
+        runtime.update(task_runtime['_runtime'])
         # workdir should exist, cur_dir is kept for backward compatibility
         runtime['cur_dir'] = runtime['workdir']
         if 'name' in task_runtime['_runtime']:
@@ -96,7 +95,8 @@ class PBS_TaskEngine(TaskEngine):
         runtime['task'] = task_id
         # job_name is recommended because of compatibility with workflow_template
         runtime['job_name'] = task_id
-        runtime['command'] = f'sos execute {task_id} -v {runtime["verbosity"]} -s {runtime["sig_mode"]} -m {runtime["run_mode"]}'
+        runtime[
+            'command'] = f'sos execute {task_id} -v {runtime["verbosity"]} -s {runtime["sig_mode"]} -m {runtime["run_mode"]}'
         if 'nodes' not in runtime:
             runtime['nodes'] = 1
         if 'cores' not in runtime:
