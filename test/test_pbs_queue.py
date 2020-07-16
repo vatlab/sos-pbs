@@ -125,7 +125,7 @@ def test_send_symbolic_link(clear_now_and_after, temp_factory):
     reason='Skip test for case sensitive file system')
 def test_case_insensitive_local_path(clear_now_and_after, temp_factory):
     '''Test path_map from a case insensitive file system.'''
-    clear_now_and_after('test_pbs_queue.py.bak')
+    clear_now_and_after('test_pbs_queue.py.bak', 'tt1.py.bak')
 
     temp_factory('tt1.py', content='something')
     execute_workflow(
