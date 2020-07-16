@@ -139,8 +139,8 @@ class PBS_TaskEngine(TaskEngine):
             )
         env.logger.debug(f'submit {task_id}: {cmd}')
         try:
-            cmd_output = self.agent.check_output(
-                cmd, stderr=subprocess.STDOUT).strip()
+            # There was an option
+            cmd_output = self.agent.check_output(cmd).strip()
         except subprocess.CalledProcessError as e:
             raise RuntimeError(
                 f'Failed to submit task {task_id}:\n{e.output.decode()}')

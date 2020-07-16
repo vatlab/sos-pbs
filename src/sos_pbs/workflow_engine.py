@@ -68,8 +68,7 @@ class PBS_WorkflowEngine(WorkflowEngine):
             )
         env.logger.debug(f'submit {self.job_name}: {cmd}')
         try:
-            cmd_output = self.agent.check_output(
-                cmd, stderr=subprocess.STDOUT).strip()
+            cmd_output = self.agent.check_output(cmd).strip()
         except subprocess.CalledProcessError as e:
             raise RuntimeError(
                 f'Failed to submit workflow {self.job_name}:\n{e.output.decode()}'
