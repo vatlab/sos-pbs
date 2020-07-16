@@ -5,6 +5,7 @@
 
 import os
 import subprocess
+import pytest
 
 from sos.utils import env
 from sos.eval import cfg_interpolate
@@ -53,7 +54,8 @@ class PBS_WorkflowEngine(WorkflowEngine):
                 cmd = f'bash ~/.sos/workflows/{self.job_name}.sh'
                 print(self.agent.check_output(cmd))
             except Exception as e:
-                raise RuntimeError(f'Failed to submit workflow {self.job_name}: {e}')
+                raise RuntimeError(
+                    f'Failed to submit workflow {self.job_name}: {e}')
             return
         #
         self.template_args['job_file'] = f'~/.sos/workflows/{self.job_name}.sh'
@@ -70,9 +72,11 @@ class PBS_WorkflowEngine(WorkflowEngine):
                 cmd, stderr=subprocess.STDOUT).strip()
         except subprocess.CalledProcessError as e:
             raise RuntimeError(
-                f'Failed to submit workflow {self.job_name}:\n{e.output.decode()}')
+                f'Failed to submit workflow {self.job_name}:\n{e.output.decode()}'
+            )
         except Exception as e:
-            raise RuntimeError(f'Failed to submit workflow {self.job_name}:\n{e}')
+            raise RuntimeError(
+                f'Failed to submit workflow {self.job_name}:\n{e}')
 
         if not cmd_output:
             raise RuntimeError(
@@ -93,7 +97,8 @@ class PBS_WorkflowEngine(WorkflowEngine):
         # try to extract job_id from command output
         # let us write an job_id file so that we can check status of workflows more easily
         job_id_file = os.path.join(
-            os.path.expanduser('~'), '.sos', 'workflows', self.job_name + '.job_id')
+            os.path.expanduser('~'), '.sos', 'workflows',
+            self.job_name + '.job_id')
         with open(job_id_file, 'w') as job:
             res = extract_pattern(submit_cmd_output, [cmd_output.strip()])
             if 'job_id' not in res or len(
@@ -113,10 +118,12 @@ class PBS_WorkflowEngine(WorkflowEngine):
             self.agent.send_job_file(job_id_file, dir='workflows')
             # output job id to stdout
             env.logger.info(
-                f'{self.job_name} ``submitted`` to {self.alias} with job id {job_id}')
+                f'{self.job_name} ``submitted`` to {self.alias} with job id {job_id}'
+            )
             return True
         except Exception as e:
-            raise RuntimeError(f'Failed to submit workflow {self.job_name}: {e}')
+            raise RuntimeError(
+                f'Failed to submit workflow {self.job_name}: {e}')
 
     def _get_job_id(self, job_name):
         job_id_file = os.path.join(
@@ -129,4 +136,3 @@ class PBS_WorkflowEngine(WorkflowEngine):
                 k, v = line.split(':', 1)
                 result[k.strip()] = v.strip()
             return result
-

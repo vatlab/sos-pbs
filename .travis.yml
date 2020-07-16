@@ -7,7 +7,7 @@ language: python
 python:
     - "3.6"
 before_install:
-    # upgrade docker so that it has same API version as client https://docs.travis-ci.com/user/docker/ 
+    # upgrade docker so that it has same API version as client https://docs.travis-ci.com/user/docker/
     - sudo apt-get update
     - sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-ce task-spooler
     # install anaconda Python 3
@@ -22,12 +22,12 @@ before_install:
     - conda info -a
     # downgrade python if needed
     - conda create -n python_test python=$TRAVIS_PYTHON_VERSION anaconda
-    - source activate python_test      
+    - source activate python_test
     # add docker
     - pip install docker
     # packages required by SoS
     - pip install pyyaml psutil tqdm nose
-    - pip install fasteners pygments networkx pydot pydotplus 
+    - pip install fasteners pygments networkx pydot pydotplus
     # https://github.com/jupyter/jupyter/issues/150
     - pip install entrypoints jupyter coverage codacy-coverage pytest pytest-cov python-coveralls
     - pip install git+https://github.com/vatlab/sos.git
@@ -46,8 +46,8 @@ before_script:
 script:
     # coverage does not seem to work well with python 3.6, but it does not really matter because we have coverage report from python 3.5 already
     # SAS and Matlab are not tested
-    - pytest -x -v --cov-report=xml
-      
+    - pytest -v --cov-report=xml
+
 after_success:
     - coverage combine
     - coveralls
@@ -58,4 +58,3 @@ notifications:
             - ben.bob@gmail.com
         on_success: never
         on_failure: always
-
