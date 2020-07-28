@@ -96,7 +96,7 @@ class PBS_TaskEngine(TaskEngine):
         # job_name is recommended because of compatibility with workflow_template
         runtime['job_name'] = task_id
         runtime[
-            'command'] = f'sos execute {task_id} -v {runtime["verbosity"]} -s {runtime["sig_mode"]} -m {runtime["run_mode"]}'
+            'command'] = f'{runtime.get("sos", "sos")} execute {task_id} -v {runtime["verbosity"]} -s {runtime["sig_mode"]} -m {runtime["run_mode"]}'
         if 'nodes' not in runtime:
             runtime['nodes'] = 1
         if 'cores' not in runtime:
