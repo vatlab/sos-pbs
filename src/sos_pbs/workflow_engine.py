@@ -5,7 +5,6 @@
 
 import os
 import subprocess
-import pytest
 
 from sos.utils import env
 from sos.eval import cfg_interpolate
