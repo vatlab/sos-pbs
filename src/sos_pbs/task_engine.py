@@ -169,7 +169,7 @@ class PBS_TaskEngine(TaskEngine):
         job_id_file = os.path.join(
             os.path.expanduser('~'), '.sos', 'tasks', task_id + '.job_id')
         with open(job_id_file, 'w') as job:
-            res = extract_pattern(submit_cmd_output, [cmd_output.strip()])
+            res = extract_pattern(submit_cmd_output, [cmd_output.strip().splitlines()[-1]])
             if 'job_id' not in res or len(
                     res['job_id']) != 1 or res['job_id'][0] is None:
                 raise RuntimeError(
